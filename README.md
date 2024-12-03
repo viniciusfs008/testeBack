@@ -94,7 +94,7 @@ A aplicação possui as seguintes rotas:
 - **Descrição:** Marca a conta do índice especificado como paga para o usuário especificado.
 
 #### exemplo de request   
-    /vinicius/contas/1/pagar
+    /vinicius/contas/0/pagar
 
 #### Exemplo de resposta:
 ```json
