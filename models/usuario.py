@@ -29,7 +29,7 @@ class Usuario:
             return "Conta não encontrada."
 
     def totais(self):
-        total_a_pagar = sum(conta["valor"] for conta in self.contas if conta["tipo"] == "a_pagar" and conta["status"] == "pendente")
+        total_a_pagar = sum(conta["valor"] for conta in self.contas if conta["tipo"] == "a_pagar")
         total_a_receber = sum(conta["valor"] for conta in self.contas if conta["tipo"] == "a_receber")
         return {
             "a_pagar": total_a_pagar,
