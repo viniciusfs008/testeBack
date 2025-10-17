@@ -1,0 +1,21 @@
+# Ignorar o versionamento do git
+.git
+.gitignore
+
+# Ignorar arquivos de ambiente (serão injetados via docker-compose)
+.env
+.env.db
+
+# Ignorar os próprios arquivos do Docker
+.dockerignore
+Dockerfile.dev
+Dockerfile.prod
+docker-compose.dev.yaml
+docker-compose.prod.yaml
+
+# Caches do Python
+__pycache__/
+
+# Ambiente virtual local
+.venv
+venv

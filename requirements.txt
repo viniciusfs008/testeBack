@@ -1,2 +1,7 @@
-Flask==2.2.3
-Werkzeug==2.2.3
+Flask
+flask-restx
+SQLAlchemy
+Flask-SQLAlchemy
+psycopg2-binary
+python-dotenv
+gunicorn

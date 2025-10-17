@@ -1,0 +1,29 @@
+# Arquivos de ambiente
+.env
+.env.db
+
+# Caches e arquivos compilados do Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ambiente virtual
+.venv
+env/
+venv/
+
+# Relatórios de teste e cobertura
+.coverage
+.pytest_cache/
+htmlcov/
+
+# Arquivos de IDEs
+.idea/
+.vscode/
+
+# Arquivos de sistema operacional
+.DS_Store
+Thumbs.db
+
+# Banco de dados local (se usar sqlite para dev)
+dev.db

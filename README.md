@@ -1,131 +1,106 @@
-# Sistema de Contas - API Flask
+# API de Sistema de Contas - Versão Refatorada
 
-Esta aplicação é uma API simples de gerenciamento de contas a pagar e a receber, onde cada usuário pode adicionar contas, visualizar as contas registradas, pagar contas e visualizar totais.
+Esta aplicação é uma API RESTful para gerenciamento de contas a pagar e a receber, construída com foco em boas práticas de desenvolvimento, escalabilidade e documentação. O projeto foi completamente refatorado para utilizar uma arquitetura moderna e robusta, ideal para ambientes de produção.
 
-Utilize Insominia ou Postman para realizar os testes com seu endereço ip local na porta 5000.
+## Tecnologias Utilizadas
 
-exemplo: http://127.0.0.1:5000
-
-## Para iniciar a aplicação
-
-É necessario ter o Docker.
-
-No diretório raiz use: 
-
-    docker compose up --build
-
-## Endpoints da API
-
-A aplicação possui as seguintes rotas:
-
-### 1. **Criar Usuário**
-- **Método:** `POST`
-- **Rota:** `/usuario/<nome>`
-- **Descrição:** Cria um novo usuário com o nome especificado.
-
-#### exemplo de request   
-    /usuario/vinicius
-
-#### Exemplo de resposta:
-```json
-{
-  "message": "Usuário 'vinicius' criado com sucesso."
-}
-```
+- **Backend:** Python, Flask
+- **API e Documentação:** Flask-RestX (para endpoints estruturados e geração automática de documentação Swagger)
+- **Banco de Dados:** PostgreSQL (orquestrado via Docker)
+- **ORM:** SQLAlchemy (para mapeamento objeto-relacional e interação com o banco de dados)
+- **Containerização:** Docker e Docker Compose (com ambientes separados para desenvolvimento e produção)
+- **Servidor de Produção:** Gunicorn (WSGI)
 
 ---
 
-### 2. **Adicionar Conta**
-- **Método:** `POST`
-- **Rota:** `/<nome>/conta`
-- **Descrição:** Adiciona uma conta a pagar ou a receber para o usuário especificado. Os dados da conta devem ser enviados no corpo da requisição em formato JSON.
-  
-#### Parâmetros JSON esperados:
-- `tipo`: Tipo da conta. Pode ser "a_pagar" ou "a_receber".
-- `valor`: Valor da conta.
-- `descricao`: Descrição da conta.
-- `data_vencimento`: Data de vencimento da conta no formato "YYYY-MM-DD".
+## Como Executar (Ambiente de Desenvolvimento)
 
-#### exemplo de request   
-    /vinicius/conta
+O ambiente de desenvolvimento é totalmente containerizado e configurado com hot-reload, permitindo que as alterações no código sejam aplicadas instantaneamente.
 
-    {
-        "tipo": "a_pagar",
-        "valor": 100.0,
-        "descricao": "Conta de luz",
-        "data_vencimento": "2024-12-10"
-    }
+### Pré-requisitos
 
-#### Exemplo de resposta:
-```json
-{
-  "message": "Conta adicionada com sucesso."
-}
-```
+- Docker
+- Docker Compose
 
----
+### Passos para Configuração
 
-### 3. **Listar Contas**
-- **Método:** `GET`
-- **Rota:** `/<nome>/contas`
-- **Descrição:** Lista todas as contas registradas para o usuário especificado.
+1.  **Clone o repositório:**
+    ```bash
+    git clone https://github.com/viniciusfs008/testeBack.git
+    cd testeBack
+    ```
 
-#### exemplo de request   
-    /vinicius/contas
+2.  **Crie o arquivo de configuração da API:**
+    Copie o arquivo de exemplo `.env.example` para um novo arquivo chamado `.env`. Ele define a URL de conexão que a API usará para se comunicar com o banco de dados.
+    ```bash
+    cp .env.example .env
+    ```
+    *Nenhuma alteração é necessária no `.env` para o ambiente de desenvolvimento padrão.*
 
-#### Exemplo de resposta (se houver contas registradas):
-```json
-[
-  {
-    "tipo": "a_pagar",
-    "valor": 100.0,
-    "descricao": "Conta de luz",
-    "data_vencimento": "2024-12-10",
-    "status": "pendente"
-  }
-]
-```
+3.  **Crie o arquivo de configuração do Banco de Dados:**
+    Copie o arquivo de exemplo `.env.db.example` para um novo arquivo chamado `.env.db`. Este arquivo fornecerá as credenciais para o container do PostgreSQL criar o banco de dados inicial.
+    ```bash
+    cp .env.db.example .env.db
+    ```
+    *Você pode alterar as credenciais no arquivo `.env.db` se desejar, mas lembre-se de atualizar a `DATABASE_URL` no arquivo `.env` para corresponder.*
+
+4.  **Suba os containers (Desenvolvimento):**
+    Execute o comando a seguir para iniciar o ambiente de desenvolvimento:
+    ```bash
+    docker-compose -f docker-compose.dev.yaml up --build
+    ```
+
+A API estará disponível em `http://localhost:5000`.
 
 ---
 
-### 4. **Pagar Conta**
-- **Método:** `POST`
-- **Rota:** `/<nome>/contas/<indice>/pagar`
-- **Descrição:** Marca a conta do índice especificado como paga para o usuário especificado.
+## Documentação da API (Swagger)
 
-#### exemplo de request   
-    /vinicius/contas/0/pagar
+Uma das principais vantagens desta arquitetura é a documentação interativa gerada automaticamente.
 
-#### Exemplo de resposta:
-```json
-{
-  "message": "Conta paga com sucesso."
-}
-```
+- **Acesse a documentação em:** `http://localhost:5000/swagger/`
+
+Nesta página, você pode visualizar todos os endpoints disponíveis, seus parâmetros, os modelos de dados de entrada e saída, e até mesmo **executar requisições de teste diretamente pelo navegador**.
 
 ---
 
-### 5. **Mostrar Totais**
-- **Método:** `GET`
-- **Rota:** `/<nome>/totais`
-- **Descrição:** Exibe o total de contas a pagar, a receber e o total geral do usuário especificado.
+## Ambiente de Produção
 
-#### exemplo de request   
-    /vinicius/totais
+Para produção, foi criado um `Dockerfile` otimizado que utiliza uma abordagem **multi-stage**:
 
-#### Exemplo de resposta:
-```json
-{
-  "a_pagar": 100.0,
-  "a_receber": 0.0,
-  "total_geral": -100.0
-}
-```
+1.  **Estágio de Build:** As dependências são instaladas em um ambiente temporário.
+2.  **Estágio de Run:** Apenas o código da aplicação e as dependências já instaladas são copiados para uma imagem final limpa e enxuta, resultando em uma imagem menor e mais segura.
+
+O servidor utilizado em produção é o **Gunicorn**, um servidor WSGI robusto, em vez do servidor de desenvolvimento do Flask.
+
+Para construir e rodar a imagem de produção, utilize o arquivo `docker-compose.prod.yaml`:
+
+    ```bash
+    docker-compose -f docker-compose.prod.yaml up -d --build
+    ```
 
 ---
 
-## Dependências
+## Estrutura do Projeto
 
-- `Flask`: Framework web para Python.
-- `json`: Biblioteca para manipulação de dados em formato JSON (já inclusa no Python).
-
+```
+/Users/viniciusferrari/dev/testeBack/
+├───app.py                  # Ponto de entrada da aplicação, cria e configura o Flask.
+├───config.py               # Classes de configuração (Dev, Prod).
+├───requirements.txt        # Lista de dependências Python.
+├───docker-compose.yaml     # Orquestra os serviços de API e banco de dados.
+├───Dockerfile.prod         # Dockerfile otimizado para produção (multi-stage).
+├───Dockerfile.dev          # Dockerfile para desenvolvimento com hot-reload.
+├───.dockerignore           # Arquivos a serem ignorados pelo Docker.
+├───.env.example            # Exemplo de variáveis de ambiente para a API.
+├───.env.db.example         # Exemplo de variáveis de ambiente para o banco de dados.
+├───README.md               # Esta documentação.
+├───models/                 # Contém os modelos de dados SQLAlchemy.
+│   ├───__init__.py         # Inicializa o objeto SQLAlchemy (db).
+│   ├───conta.py            # Modelo da tabela 'contas'.
+│   └───usuario.py          # Modelo da tabela 'usuarios'.
+└───routes/                 # Contém a lógica dos endpoints da API.
+    ├───__init__.py         # Inicializa a API Flask-RestX e registra os namespaces.
+    ├───conta.py            # Endpoints e DTOs relacionados a contas.
+    └───usuario.py          # Endpoints e DTOs relacionados a usuários.
+```

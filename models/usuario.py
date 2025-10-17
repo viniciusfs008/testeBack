@@ -1,38 +1,14 @@
-class Usuario:
-    def __init__(self, nome, contas=None):
-        self.nome = nome
-        # Se não houver contas, inicializa com uma lista vazia
-        self.contas = contas if contas is not None else []
+from . import db
 
-    def adicionar_conta(self, tipo, valor, descricao, data_vencimento):
-        conta = {
-            "tipo": tipo,
-            "valor": valor,
-            "descricao": descricao,
-            "data_vencimento": data_vencimento,
-            "status": "pendente"  # Por padrão, a conta começa como "pendente"
-        }
-        self.contas.append(conta)
+class Usuario(db.Model):
+    """Modelo de dados para o Usuário."""
+    __tablename__ = 'usuarios'
 
-    def listar_contas(self):
-        return self.contas
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(80), unique=True, nullable=False)
+    
+    # Relacionamento com as contas
+    contas = db.relationship('Conta', back_populates='usuario', lazy=True, cascade="all, delete-orphan")
 
-    def pagar_conta(self, indice):
-        try:
-            conta = self.contas[indice]
-            if conta["status"] == "pendente":
-                conta["status"] = "pago"
-                return "Conta paga com sucesso."
-            else:
-                return "A conta já foi paga."
-        except IndexError:
-            return "Conta não encontrada."
-
-    def totais(self):
-        total_a_pagar = sum(conta["valor"] for conta in self.contas if conta["tipo"] == "a_pagar")
-        total_a_receber = sum(conta["valor"] for conta in self.contas if conta["tipo"] == "a_receber")
-        return {
-            "a_pagar": total_a_pagar,
-            "a_receber": total_a_receber,
-            "total_geral": total_a_receber - total_a_pagar
-        }
+    def __repr__(self):
+        return f'<Usuario {self.nome}>'

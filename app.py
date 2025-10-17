@@ -1,50 +1,27 @@
-from flask import Flask, request, jsonify
-from models.sistema import Sistema
+import os
+from flask import Flask
+from models import db
+from routes import api
+from config import config_by_name
 
-app = Flask(__name__)
-sistema = Sistema()
+def create_app(config_name):
+    """Cria e configura uma instância da aplicação Flask."""
+    app = Flask(__name__)
+    app.config.from_object(config_by_name[config_name])
 
-@app.route("/usuario/<nome>", methods=["POST"])
-def adicionar_usuario(nome):
-    usuario = sistema.adicionar_usuario(nome)
-    return jsonify({"message": f"Usuário '{nome}' criado com sucesso."})
+    # Inicializa as extensões
+    db.init_app(app)
+    api.init_app(app)
 
-@app.route("/<nome>/conta", methods=["POST"])
-def adicionar_conta(nome):
-    data = request.json
-    usuario = sistema.usuarios.get(nome)
-    if not usuario:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-    try:
-        usuario.adicionar_conta(data["tipo"], data["valor"], data["descricao"], data["data_vencimento"])
-        sistema.salvar_dados()
-        return jsonify({"message": "Conta adicionada com sucesso."})
-    except KeyError as e:
-        return jsonify({"error": f"Campo obrigatório faltando: {str(e)}"}), 400
+    with app.app_context():
+        # Cria as tabelas do banco de dados, se não existirem
+        db.create_all()
 
-@app.route("/<nome>/contas", methods=["GET"])
-def listar_contas(nome):
-    usuario = sistema.usuarios.get(nome)
-    if not usuario:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-    return jsonify(usuario.listar_contas())
+    return app
 
-@app.route("/<nome>/contas/<int:indice>/pagar", methods=["POST"])
-def pagar_conta(nome, indice):
-    usuario = sistema.usuarios.get(nome)
-    if not usuario:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-
-    resultado = usuario.pagar_conta(indice)
-    sistema.salvar_dados()
-    return jsonify({"message": resultado})
-
-@app.route("/<nome>/totais", methods=["GET"])
-def mostrar_totais(nome):
-    usuario = sistema.usuarios.get(nome)
-    if not usuario:
-        return jsonify({"error": "Usuário não encontrado"}), 404
-    return jsonify(usuario.totais())
+# Obtém a configuração (development ou production) a partir de variável de ambiente
+config_name = os.getenv('FLASK_CONFIG') or 'development'
+app = create_app(config_name)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

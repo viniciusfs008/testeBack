@@ -1,0 +1,22 @@
+# Dockerfile para Ambiente de Desenvolvimento
+
+# Use uma imagem base do Python
+FROM python:3.10-slim
+
+# Define o diretório de trabalho no container
+WORKDIR /app
+
+# Copia o arquivo de dependências
+COPY requirements.txt requirements.txt
+
+# Instala as dependências
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Define a variável de ambiente para usar a configuração de desenvolvimento
+ENV FLASK_CONFIG=development
+
+# Expõe a porta que a aplicação irá rodar
+EXPOSE 5000
+
+# O comando para rodar a aplicação será definido no docker-compose.yaml
+# para permitir o hot-reload.

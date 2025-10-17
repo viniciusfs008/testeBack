@@ -1,25 +1,22 @@
-class Conta:
-    def __init__(self, tipo, valor, descricao, data_vencimento):
-        self.tipo = tipo
-        self.valor = valor
-        self.descricao = descricao
-        self.data_vencimento = data_vencimento
-        self.status = "pendente"
+from datetime import datetime
+from . import db
 
-    def pagar(self):
-        self.status = "pago"
+class Conta(db.Model):
+    """Modelo de dados para a Conta."""
+    __tablename__ = 'contas'
 
-    def to_dict(self):
-        return {
-            "tipo": self.tipo,
-            "valor": self.valor,
-            "descricao": self.descricao,
-            "data_vencimento": self.data_vencimento,
-            "status": self.status,
-        }
+    id = db.Column(db.Integer, primary_key=True)
+    tipo = db.Column(db.String(20), nullable=False)  # 'a_pagar' ou 'a_receber'
+    valor = db.Column(db.Float, nullable=False)
+    descricao = db.Column(db.String(200), nullable=True)
+    data_vencimento = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(20), nullable=False, default='pendente') # 'pendente' ou 'pago'
+    
+    # Chave estrangeira para o usuário
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    
+    # Relacionamento com o usuário
+    usuario = db.relationship('Usuario', back_populates='contas')
 
-    @classmethod
-    def from_dict(cls, data):
-        conta = cls(data["tipo"], data["valor"], data["descricao"], data["data_vencimento"])
-        conta.status = data.get("status", "pendente")
-        return conta
+    def __repr__(self):
+        return f'<Conta {self.descricao} - {self.valor}>'

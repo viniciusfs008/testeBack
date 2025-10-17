@@ -1,0 +1,39 @@
+# Dockerfile para Ambiente de Produção (Multi-stage)
+
+# --- Estágio 1: Builder ---
+# Instala as dependências em um ambiente virtual separado
+FROM python:3.10-slim as builder
+
+WORKDIR /app
+
+# Cria um ambiente virtual
+RUN python -m venv /app/venv
+ENV PATH="/app/venv/bin:$PATH"
+
+# Copia o arquivo de dependências e o instala
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# --- Estágio 2: Runner ---
+# Cria a imagem final de produção
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Copia o ambiente virtual do estágio builder
+COPY --from=builder /app/venv ./venv
+
+# Ativa o ambiente virtual para os comandos subsequentes
+ENV PATH="/app/venv/bin:$PATH"
+
+# Copia o código da aplicação
+COPY . .
+
+# Define a variável de ambiente para usar a configuração de produção
+ENV FLASK_CONFIG=production
+
+# Expõe a porta que o Gunicorn irá rodar
+EXPOSE 5000
+
+# Comando para iniciar a aplicação com Gunicorn
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
