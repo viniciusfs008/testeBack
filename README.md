@@ -50,6 +50,8 @@ O ambiente de desenvolvimento é totalmente containerizado e configurado com hot
     docker-compose -f docker-compose.dev.yaml up --build
     ```
 
+    **Nota sobre `localhost`**: Em alguns ambientes Docker (como Windows com WSL2), a aplicação pode não responder em `http://localhost:5000`. Se isso ocorrer, utilize o endereço de IP que aparece nos logs de inicialização da API (ex: `http://192.168.107.3:5000`).
+
 A API estará disponível em `http://localhost:5000`.
 
 ---
